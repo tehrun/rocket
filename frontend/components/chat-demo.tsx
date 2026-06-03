@@ -1,88 +1,83 @@
 "use client";
 
-import { FormEvent, KeyboardEvent, useMemo, useState } from "react";
-import { Send } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Bot, Image, Loader2, MessageSquareText, PlaySquare, Sparkles, type LucideIcon } from "lucide-react";
 
 import { MessageBubble } from "@/components/message-bubble";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
-type Message = {
+type DemoScenario = {
   id: string;
-  role: "user" | "assistant";
-  content: string;
+  label: string;
+  icon: LucideIcon;
+  userMessage: string;
+  assistantMessage: string;
+  outputLabel: string;
+  outputDescription: string;
 };
 
-const assistantGreeting: Message = {
-  id: "assistant-greeting",
-  role: "assistant",
-  content: "Hi, tell me what kind of AI solution you need.",
-};
-
-const examplePrompts = [
-  "Customer support chatbot",
-  "Automate reports",
-  "AI product search",
-  "Internal knowledge assistant",
+const demoScenarios: DemoScenario[] = [
+  {
+    id: "image-generation",
+    label: "Image generation",
+    icon: Image,
+    userMessage: "Can you create product image concepts for a new eco bottle launch?",
+    assistantMessage:
+      "Yes. I would generate three visual directions: studio hero shots, lifestyle desk scenes, and social-ready detail crops with your brand colors locked in.",
+    outputLabel: "3 concept boards queued",
+    outputDescription: "Prompt templates, brand guardrails, and review steps are prepared.",
+  },
+  {
+    id: "video-generation",
+    label: "Video generation",
+    icon: PlaySquare,
+    userMessage: "We need short videos for a feature announcement. What should the AI make first?",
+    assistantMessage:
+      "Start with a 15-second storyboard, script, caption set, and shot plan. Once approved, the generation workflow can produce variants for paid social and product pages.",
+    outputLabel: "Storyboard draft ready",
+    outputDescription: "Scenes, narration, and campaign variants are structured.",
+  },
+  {
+    id: "simple-questions",
+    label: "Simple questions",
+    icon: MessageSquareText,
+    userMessage: "Can customers ask simple shipping and return questions?",
+    assistantMessage:
+      "Absolutely. The assistant can answer from your policies, show source-backed responses, and escalate low-confidence questions to your team.",
+    outputLabel: "Knowledge assistant mapped",
+    outputDescription: "FAQs, policy documents, and fallback rules are connected.",
+  },
+  {
+    id: "workflow-automation",
+    label: "Workflow automation",
+    icon: Bot,
+    userMessage: "Can AI summarize sales calls and update our CRM automatically?",
+    assistantMessage:
+      "Yes. The workflow can transcribe calls, extract action items, draft follow-ups, and update CRM fields after a quick human approval step.",
+    outputLabel: "Automation flow designed",
+    outputDescription: "CRM fields, approval points, and notifications are defined.",
+  },
 ];
 
-const mockAssistantResponse =
-  "That sounds like a great fit for a custom AI workflow. We can help define the data sources, user journey, and integration points to build a practical solution.";
-
 export function ChatDemo() {
-  const [messages, setMessages] = useState<Message[]>([assistantGreeting]);
-  const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [selectedScenarioId, setSelectedScenarioId] = useState(demoScenarios[0].id);
+  const [activeScenarioId, setActiveScenarioId] = useState(demoScenarios[0].id);
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const canSend = useMemo(() => input.trim().length > 0 && !isLoading, [input, isLoading]);
+  const activeScenario = useMemo(
+    () => demoScenarios.find((scenario) => scenario.id === activeScenarioId) ?? demoScenarios[0],
+    [activeScenarioId],
+  );
 
-  function appendMockAssistantResponse() {
+  function runScenario(scenarioId: string) {
+    setSelectedScenarioId(scenarioId);
+    setIsGenerating(true);
+
     window.setTimeout(() => {
-      setMessages((current) => [
-        ...current,
-        {
-          id: `assistant-${Date.now()}`,
-          role: "assistant",
-          content: mockAssistantResponse,
-        },
-      ]);
-      setIsLoading(false);
-    }, 800);
-  }
-
-  function sendMessage(content: string) {
-    const trimmedContent = content.trim();
-
-    if (!trimmedContent || isLoading) {
-      return;
-    }
-
-    setMessages((current) => [
-      ...current,
-      {
-        id: `user-${Date.now()}`,
-        role: "user",
-        content: trimmedContent,
-      },
-    ]);
-    setInput("");
-    setIsLoading(true);
-
-    // Future API integration can replace this mock response timeout.
-    appendMockAssistantResponse();
-  }
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    sendMessage(input);
-  }
-
-  function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      sendMessage(input);
-    }
+      setActiveScenarioId(scenarioId);
+      setIsGenerating(false);
+    }, 900);
   }
 
   return (
@@ -93,58 +88,72 @@ export function ChatDemo() {
             Interactive demo
           </p>
           <h2 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Describe your workflow. Get a practical AI direction.
+            Watch practical AI answers for everyday workflows.
           </h2>
           <p className="mt-4 text-muted-foreground">
-            This frontend-only chat demo is wired for local state today and ready
-            for a future API-backed assistant tomorrow.
+            Choose a scenario to see how an AI assistant could respond to image
+            generation, video generation, simple questions, and automation requests.
           </p>
         </div>
 
         <Card className="overflow-hidden p-4 sm:p-6">
-          <div className="mb-4 flex flex-wrap gap-2" aria-label="Example prompts">
-            {examplePrompts.map((prompt) => (
-              <button
-                key={prompt}
-                type="button"
-                className="rounded-full border border-border bg-secondary/60 px-3 py-2 text-xs font-medium text-secondary-foreground transition-colors hover:bg-secondary disabled:opacity-50"
-                onClick={() => setInput(prompt)}
-                disabled={isLoading}
-              >
-                {prompt}
-              </button>
-            ))}
+          <div className="mb-4 grid gap-2 sm:grid-cols-2" aria-label="Demo scenarios">
+            {demoScenarios.map((scenario) => {
+              const Icon = scenario.icon;
+              const isSelected = selectedScenarioId === scenario.id;
+
+              return (
+                <button
+                  key={scenario.id}
+                  type="button"
+                  className={cn(
+                    "flex items-center gap-3 rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition-colors disabled:cursor-wait disabled:opacity-70",
+                    isSelected
+                      ? "border-primary/60 bg-primary/15 text-foreground"
+                      : "border-border bg-secondary/40 text-muted-foreground hover:bg-secondary/70 hover:text-foreground",
+                  )}
+                  onClick={() => runScenario(scenario.id)}
+                  disabled={isGenerating}
+                >
+                  <Icon className="h-4 w-4 text-primary" aria-hidden="true" />
+                  {scenario.label}
+                </button>
+              );
+            })}
           </div>
 
-          <div className="flex min-h-[320px] flex-col gap-4 rounded-3xl border border-border/70 bg-background/55 p-4">
+          <div className="flex min-h-[360px] flex-col gap-4 rounded-3xl border border-border/70 bg-background/55 p-4">
             <div className="flex flex-1 flex-col gap-3" aria-live="polite">
-              {messages.map((message) => (
-                <MessageBubble key={message.id} role={message.role} content={message.content} />
-              ))}
-              {isLoading ? (
-                <MessageBubble role="assistant" content="Typing..." />
-              ) : null}
+              <MessageBubble role="user" content={activeScenario.userMessage} />
+              {isGenerating ? (
+                <div className="flex justify-start">
+                  <div className="flex max-w-[82%] items-center gap-3 rounded-2xl border border-border/80 bg-muted/70 px-4 py-3 text-sm leading-6 text-foreground shadow-sm">
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" aria-hidden="true" />
+                    Generating answer...
+                  </div>
+                </div>
+              ) : (
+                <MessageBubble role="assistant" content={activeScenario.assistantMessage} />
+              )}
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <label htmlFor="ai-chat-message" className="sr-only">
-                Message for AI Solutions assistant
-              </label>
-              <Textarea
-                id="ai-chat-message"
-                value={input}
-                onChange={(event) => setInput(event.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Tell us about the workflow you want to improve..."
-                disabled={isLoading}
-              />
-              <div className="flex justify-end">
-                <Button type="submit" disabled={!canSend} aria-label="Send chat message">
-                  Send
-                  <Send className="h-4 w-4" aria-hidden="true" />
-                </Button>
+            <div className="rounded-3xl border border-primary/30 bg-primary/10 p-4">
+              <div className="flex items-start gap-3">
+                <div className="rounded-2xl bg-primary/20 p-2 text-primary">
+                  <Sparkles className="h-5 w-5" aria-hidden="true" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    {isGenerating ? "Preparing AI direction..." : activeScenario.outputLabel}
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                    {isGenerating
+                      ? "Loading the right workflow steps, guardrails, and next-best action."
+                      : activeScenario.outputDescription}
+                  </p>
+                </div>
               </div>
-            </form>
+            </div>
           </div>
         </Card>
       </div>

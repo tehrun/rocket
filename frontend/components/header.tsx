@@ -30,7 +30,7 @@ export function Header() {
           ))}
         </nav>
 
-        <a href="#chat" className={cn(buttonVariants({ size: "sm" }))}>
+        <a href="/chat" className={cn(buttonVariants({ size: "sm" }))}>
           Start Chat
         </a>
       </div>
