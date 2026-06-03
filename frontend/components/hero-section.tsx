@@ -29,8 +29,8 @@ export function HeroSection() {
           </p>
 
           <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-            <a href="#chat" className={cn(buttonVariants({ size: "lg" }))}>
-              Talk to our AI
+            <a href="/chat" className={cn(buttonVariants({ size: "lg" }))}>
+              Start Chat
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </a>
             <a
