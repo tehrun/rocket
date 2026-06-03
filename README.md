@@ -13,7 +13,7 @@ Install the following tools before working locally:
 - A stable Rust toolchain. This repository includes `rust-toolchain.toml`, which
   selects the stable channel and installs `rustfmt` and `clippy`.
 - Docker with the Compose plugin if you want to build or run the containerized
-  application.
+  Rust application and frontend.
 
 ## Local Rust setup
 
@@ -49,15 +49,19 @@ Run the container directly:
 docker run --rm rocket
 ```
 
-Or build and run it with Docker Compose:
+Or build and run the Rust app and frontend with Docker Compose:
 
 ```sh
 docker compose up --build
 ```
 
-The Compose configuration exposes port `8080:8080` for future web/server
-behavior, although the current application is a CLI that exits after printing a
-greeting.
+The Compose configuration starts both services:
+
+- the Rust app service on `8080:8080`;
+- the Next.js frontend on <http://localhost:3000>.
+
+The Rust application is currently a CLI that exits after printing a greeting. The
+frontend remains available as a long-running web service while Compose is up.
 
 ## Build command
 
